@@ -159,7 +159,11 @@ public class ApiService
     {
         try
         {
-            var url = $"{_baseUrl}/{scriptName}/{taskName}/{groupName}/{argName}/value?types={Uri.EscapeDataString(type)}&value={Uri.EscapeDataString(value?.ToString() ?? "")}";
+            // Python backend expects lowercase "true"/"false" for booleans
+            var valueStr = value is bool boolVal
+                ? boolVal.ToString().ToLowerInvariant()
+                : value?.ToString() ?? string.Empty;
+            var url = $"{_baseUrl}/{scriptName}/{taskName}/{groupName}/{argName}/value?types={Uri.EscapeDataString(type)}&value={Uri.EscapeDataString(valueStr)}";
             var request = new HttpRequestMessage(HttpMethod.Put, url);
             var response = await _http.SendAsync(request);
             var json = await response.Content.ReadAsStringAsync();

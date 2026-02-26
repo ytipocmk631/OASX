@@ -4,19 +4,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="White">
+             Background="{DynamicResource BackgroundBrush}">
     <ScrollViewer>
-        <StackPanel HorizontalAlignment="Center" MaxWidth="420" Margin="0,24">
+        <StackPanel HorizontalAlignment="Center" MaxWidth="440" Margin="0,24">
 
             <!-- Theme section -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Theme" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Text="Theme" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Dark Mode" VerticalAlignment="Center" FontSize="13" Width="100"/>
+                        <TextBlock Text="Dark Mode" VerticalAlignment="Center"
+                                   FontSize="13" Width="120"
+                                   Foreground="{DynamicResource ForegroundBrush}"/>
                         <ToggleButton IsChecked="{Binding IsDarkTheme}"
                                       Command="{Binding ToggleThemeCommand}"
-                                      Width="50" Height="24"
+                                      Width="56" Height="26"
                                       Content="{Binding IsDarkTheme, Converter={StaticResource BoolToOnOffConverter}}"/>
                     </StackPanel>
                 </StackPanel>
@@ -25,9 +28,10 @@
             <!-- Language section -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Language" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Text="Language" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="中文" Width="80" Margin="0,0,8,0"
+                        <Button Content="&#x4E2D;&#x6587;" Width="90" Margin="0,0,8,0"
                                 Command="{Binding SwitchToChineseCommand}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -40,7 +44,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Content="English" Width="80"
+                        <Button Content="English" Width="90"
                                 Command="{Binding SwitchToEnglishCommand}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -60,13 +64,14 @@
             <!-- Server control -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Server" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Text="Server" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <Button Content="Kill OAS Server"
                             Command="{Binding KillServerCommand}"
                             MinWidth="160"
                             Foreground="#F44336"
                             BorderBrush="#F44336"
-                            Background="White"
+                            Background="Transparent"
                             HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
@@ -74,7 +79,8 @@
             <!-- Account -->
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="Account" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Text="Account" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <Button Content="Log Out"
                             Command="{Binding LogoutCommand}"
                             MinWidth="160"

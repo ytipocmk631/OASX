@@ -1,13 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using OASX.WPF.ViewModels;
-using OASX.WPF.Views;
 
 namespace OASX.WPF.Views;
 
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _vm;
+    // Prevents double-firing when InitializeAsync sets SelectedScriptName programmatically
+    private bool _suppressSelectionChange = false;
 
     public MainWindow(MainViewModel vm)
     {
@@ -17,13 +18,25 @@ public partial class MainWindow : Window
         vm.SettingsVm.LogoutRequested += OnLogoutRequested;
         vm.AddConfigRequested += OnAddConfigRequested;
 
-        Loaded += async (_, _) => await vm.InitializeAsync();
+        Loaded += async (_, _) =>
+        {
+            _suppressSelectionChange = true;
+            try { await vm.InitializeAsync(); }
+            finally { _suppressSelectionChange = false; }
+        };
     }
 
     private async void ScriptList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressSelectionChange) return;
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is string name)
             await _vm.SelectScriptAsync(name);
+    }
+
+    private async void TaskList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count > 0 && e.AddedItems[0] is Models.MenuItemModel item && !item.IsHeader)
+            await _vm.SelectTaskAsync(item.Name);
     }
 
     private async void OnAddConfigRequested(object? sender, EventArgs e)
@@ -37,25 +50,39 @@ public partial class MainWindow : Window
 
     private async void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
-        if (_vm.SelectedScriptName == null || _vm.SelectedScriptName == "Home") return;
+        // Use the item the context menu was opened on, not just SelectedScriptName
+        var name = GetContextMenuTargetScript() ?? _vm.SelectedScriptName;
+        if (name == null || name == "Home") return;
 
-        var dialog = new RenameDialog(_vm.SelectedScriptName) { Owner = this };
+        var dialog = new RenameDialog(name) { Owner = this };
         if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.NewName))
-            await _vm.RenameConfigAsync(_vm.SelectedScriptName, dialog.NewName);
+            await _vm.RenameConfigAsync(name, dialog.NewName);
     }
 
     private async void MenuItem_Delete(object sender, RoutedEventArgs e)
     {
-        if (_vm.SelectedScriptName == null || _vm.SelectedScriptName == "Home") return;
+        var name = GetContextMenuTargetScript() ?? _vm.SelectedScriptName;
+        if (name == null || name == "Home") return;
 
         var result = MessageBox.Show(
-            $"Delete configuration \"{_vm.SelectedScriptName}\"?",
+            $"Delete configuration \"{name}\"?",
             "Confirm Delete",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning);
 
         if (result == MessageBoxResult.OK)
-            await _vm.DeleteConfigAsync(_vm.SelectedScriptName);
+            await _vm.DeleteConfigAsync(name);
+    }
+
+    /// <summary>
+    /// Attempts to find which script name the ListBox context menu was opened for.
+    /// Returns null if it cannot be determined.
+    /// </summary>
+    private string? GetContextMenuTargetScript()
+    {
+        // WPF ContextMenu stores the PlacementTarget (the ListBox itself);
+        // we figure out which item it was opened on via the ListBox's SelectedItem.
+        return ScriptListBox.SelectedItem as string;
     }
 
     private void OnLogoutRequested(object? sender, EventArgs e)
@@ -65,3 +92,4 @@ public partial class MainWindow : Window
         Close();
     }
 }
+

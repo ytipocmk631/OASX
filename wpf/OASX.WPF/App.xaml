@@ -1,4 +1,4 @@
-﻿<Application x:Class="OASX.WPF.App"
+<Application x:Class="OASX.WPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:OASX.WPF">
@@ -9,13 +9,20 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:BoolToOnOffConverter x:Key="BoolToOnOffConverter"/>
 
+        <!-- ===== Theme-sensitive brushes (updated at runtime) ===== -->
+        <SolidColorBrush x:Key="BackgroundBrush"          Color="White"/>
+        <SolidColorBrush x:Key="SidebarBrush"             Color="#EEEEEE"/>
+        <SolidColorBrush x:Key="ForegroundBrush"          Color="#212121"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#555555"/>
+        <SolidColorBrush x:Key="CardBackground"           Color="White"/>
+
         <!-- ===== Drop shadow for cards ===== -->
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2"
-                          Direction="315" Color="#AAAAAA" Opacity="0.3"/>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2"
+                          Direction="315" Color="#AAAAAA" Opacity="0.25"/>
 
         <!-- ===== Card border style ===== -->
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Effect" Value="{StaticResource CardShadow}"/>

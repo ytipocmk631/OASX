@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 using OASX.WPF.Services;
 using OASX.WPF.ViewModels;
 using OASX.WPF.Views;
@@ -27,6 +28,9 @@ public partial class App : Application
         _apiService.SetAddress(_settingsService.Settings.Address);
         _wsService = new WebSocketService();
 
+        // Apply saved theme on startup
+        ApplyTheme(_settingsService.Settings.Theme == "Dark");
+
         var loginWindow = CreateLoginWindow();
         loginWindow.Show();
     }
@@ -46,8 +50,34 @@ public partial class App : Application
     public static MainWindow CreateMainWindow()
     {
         var settingsVm = new SettingsViewModel(_settingsService!, _apiService!);
+        settingsVm.ThemeChanged += (_, isDark) => ApplyTheme(isDark);
         var mainVm = new MainViewModel(_apiService!, _wsService!, settingsVm);
         return new MainWindow(mainVm);
+    }
+
+    /// <summary>
+    /// Swaps the application-level brush resources to implement light/dark theming.
+    /// Uses DynamicResource references in XAML so all controls update automatically.
+    /// </summary>
+    public static void ApplyTheme(bool isDark)
+    {
+        var res = Current.Resources;
+        if (isDark)
+        {
+            res["BackgroundBrush"]          = new SolidColorBrush(Color.FromRgb(30,  30,  30));
+            res["SidebarBrush"]             = new SolidColorBrush(Color.FromRgb(45,  45,  45));
+            res["ForegroundBrush"]          = new SolidColorBrush(Color.FromRgb(220, 220, 220));
+            res["SecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(160, 160, 160));
+            res["CardBackground"]           = new SolidColorBrush(Color.FromRgb(50,  50,  50));
+        }
+        else
+        {
+            res["BackgroundBrush"]          = new SolidColorBrush(Colors.White);
+            res["SidebarBrush"]             = new SolidColorBrush(Color.FromRgb(238, 238, 238));
+            res["ForegroundBrush"]          = new SolidColorBrush(Color.FromRgb(33,  33,  33));
+            res["SecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(85,  85,  85));
+            res["CardBackground"]           = new SolidColorBrush(Colors.White);
+        }
     }
 }
 
