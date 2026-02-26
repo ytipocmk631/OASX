@@ -1,0 +1,185 @@
+<Window x:Class="OASX.WPF.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:OASX.WPF.Views"
+        xmlns:vm="clr-namespace:OASX.WPF.ViewModels"
+        mc:Ignorable="d"
+        Title="OASX"
+        Width="1200" Height="760"
+        MinWidth="900" MinHeight="580"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <!-- DataTemplates: automatically selects the right View for each ViewModel type -->
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:OverviewViewModel}">
+            <views:OverviewView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ArgsViewModel}">
+            <views:ArgsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+            <views:HomeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UpdaterViewModel}">
+            <views:UpdaterView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ToolViewModel}">
+            <views:ToolView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Navigation rail (add / settings buttons) -->
+            <ColumnDefinition Width="60"/>
+            <!-- Script list -->
+            <ColumnDefinition Width="170"/>
+            <!-- Task menu -->
+            <ColumnDefinition Width="170"/>
+            <!-- Main content -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== Navigation Rail ===== -->
+        <Border Grid.Column="0" Background="#1976D2">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="OAS" FontSize="13" FontWeight="Bold"
+                           Foreground="White" TextAlignment="Center"
+                           Padding="0,14"/>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,10">
+                    <Button ToolTip="Add Configuration"
+                            Command="{Binding ShowAddConfigDialogCommand}"
+                            Style="{StaticResource NavIconButtonStyle}">
+                        <TextBlock Text="+" FontSize="22" Foreground="White" FontWeight="Bold"/>
+                    </Button>
+                    <Button ToolTip="Settings"
+                            Command="{Binding ShowSettingsCommand}"
+                            Style="{StaticResource NavIconButtonStyle}">
+                        <TextBlock Text="&#x2699;" FontSize="18" Foreground="White"/>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel/>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== Script list ===== -->
+        <Border Grid.Column="1" Background="{DynamicResource SidebarBrush}"
+                BorderBrush="#CCCCCC" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="{DynamicResource str_Scripts}"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Padding="10,8"/>
+                <ListBox x:Name="ScriptListBox"
+                         ItemsSource="{Binding ScriptNames}"
+                         SelectedItem="{Binding SelectedScriptName, Mode=OneWay}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         SelectionChanged="ScriptList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontSize="13" Padding="10,5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#BBDEFB"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{DynamicResource str_Rename}" Click="MenuItem_Rename"/>
+                            <MenuItem Header="{DynamicResource str_Delete}" Click="MenuItem_Delete"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== Task menu ===== -->
+        <Border Grid.Column="2" Background="{DynamicResource SidebarBrush}"
+                BorderBrush="#CCCCCC" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="{DynamicResource str_Tasks}"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Padding="10,8"/>
+                <ListBox x:Name="TaskListBox"
+                         ItemsSource="{Binding TaskMenuItems}"
+                         SelectedItem="{Binding SelectedTaskItem, Mode=OneWay}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         SelectionChanged="TaskList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Padding" Value="10,4"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+                                                <Setter Property="Padding" Value="10,8,10,2"/>
+                                                <Setter Property="FontSize" Value="11"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </DataTrigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#BBDEFB"/>
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsEnabled" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                </MultiTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== Main content area ===== -->
+        <ContentControl Grid.Column="3"
+                        Content="{Binding CurrentView}"/>
+    </Grid>
+</Window>
