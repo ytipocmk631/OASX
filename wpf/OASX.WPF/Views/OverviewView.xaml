@@ -23,7 +23,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Scheduler"
+                    <TextBlock Grid.Column="0" Text="{DynamicResource str_Scheduler}"
                                FontSize="14" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}"
                                VerticalAlignment="Center"/>
@@ -78,7 +78,7 @@
             <!-- Running task card -->
             <Border DockPanel.Dock="Top" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
                 <StackPanel>
-                    <TextBlock Text="Running" FontSize="13" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Running}" FontSize="13" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,6"/>
                     <Separator Margin="0,0,0,4"/>
                     <TextBlock Text="{Binding Script.RunningTask}"
@@ -91,7 +91,7 @@
             <!-- Pending tasks card (fixed height) -->
             <Border DockPanel.Dock="Top" Style="{StaticResource CardStyle}" Margin="0,0,0,8" Height="160">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Pending"
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource str_Pending}"
                                FontSize="13" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,6"/>
                     <Separator DockPanel.Dock="Top" Margin="0,0,0,4"/>
@@ -113,7 +113,7 @@
             <!-- Waiting tasks card (expands to fill remaining space) -->
             <Border DockPanel.Dock="Top" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Waiting"
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource str_Waiting}"
                                FontSize="13" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,6"/>
                     <Separator DockPanel.Dock="Top" Margin="0,0,0,4"/>
@@ -136,7 +136,7 @@
             <Border DockPanel.Dock="Bottom" Padding="8,4"
                     Background="{DynamicResource SidebarBrush}">
                 <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryForegroundBrush}">
-                    <Run Text="WS: "/>
+                    <Run Text="{DynamicResource str_WS}"/>
                     <Run Text="{Binding WsStatusText}"/>
                 </TextBlock>
             </Border>
@@ -148,10 +148,10 @@
         <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="4,8,8,8">
             <DockPanel>
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
-                    <TextBlock Text="Log" FontSize="13" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Log}" FontSize="13" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}"
                                VerticalAlignment="Center"/>
-                    <Button DockPanel.Dock="Right" Content="Clear"
+                    <Button DockPanel.Dock="Right" Content="{DynamicResource str_Clear}"
                             Click="ClearLog_Click"
                             Style="{StaticResource IconButtonStyle}"
                             FontSize="12" Padding="8,2"/>

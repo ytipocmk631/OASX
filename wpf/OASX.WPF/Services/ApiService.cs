@@ -143,7 +143,53 @@ public class ApiService
         catch { return []; }
     }
 
-    // ---------- Script arguments ----------
+    // ---------- Translations ----------
+
+    /// <summary>
+    /// Pushes the Chinese translation dictionary to the OAS backend so it can use
+    /// those translations when serving arg names and descriptions (mirrors Flutter's putChineseTranslate).
+    /// </summary>
+    public async Task<bool> PutChineseTranslateAsync(Dictionary<string, string> translations)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(translations);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await _http.PutAsync($"{_baseUrl}/home/chinese_translate", content);
+            var result = await response.Content.ReadAsStringAsync();
+            return result.Trim() == "true";
+        }
+        catch { return false; }
+    }
+
+    /// <summary>
+    /// Fetches server-specific additional translations (mirrors Flutter's getAdditionalTranslate).
+    /// Returns a map of locale → (key → translated text).
+    /// </summary>
+    public async Task<Dictionary<string, Dictionary<string, string>>> GetAdditionalTranslateAsync()
+    {
+        try
+        {
+            var json = await GetStringAsync("/home/additional_translate");
+            if (string.IsNullOrWhiteSpace(json)) return [];
+            var node = JsonNode.Parse(json) as JsonObject;
+            if (node == null) return [];
+            var result = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var kvp in node)
+            {
+                if (kvp.Value is JsonObject localeObj)
+                {
+                    var dict = new Dictionary<string, string>();
+                    foreach (var entry in localeObj)
+                        dict[entry.Key] = entry.Value?.ToString() ?? string.Empty;
+                    result[kvp.Key] = dict;
+                }
+            }
+            return result;
+        }
+        catch { return []; }
+    }
+
 
     public async Task<JsonObject?> GetScriptTaskArgsAsync(string scriptName, string taskName)
     {

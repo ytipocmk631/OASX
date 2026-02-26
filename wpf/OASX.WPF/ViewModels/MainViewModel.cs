@@ -51,6 +51,13 @@ public partial class MainViewModel : ObservableObject
 
     public async Task InitializeAsync()
     {
+        // Push Chinese translations to the server and fetch server-specific additions
+        // (mirrors Flutter's NavCtrl.onInit translation setup)
+        _ = _api.PutChineseTranslateAsync(LocalizationService.Instance.GetChineseDictionary());
+        var extra = await _api.GetAdditionalTranslateAsync();
+        foreach (var (lang, dict) in extra)
+            LocalizationService.Instance.MergeTranslations(lang, dict);
+
         var names = await _api.GetConfigListAsync();
         ScriptNames = new ObservableCollection<string>(names);
 

@@ -11,10 +11,10 @@
             <!-- Theme section -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Theme" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Theme}" FontSize="15" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Dark Mode" VerticalAlignment="Center"
+                        <TextBlock Text="{DynamicResource str_DarkMode}" VerticalAlignment="Center"
                                    FontSize="13" Width="120"
                                    Foreground="{DynamicResource ForegroundBrush}"/>
                         <ToggleButton IsChecked="{Binding IsDarkTheme}"
@@ -28,10 +28,10 @@
             <!-- Language section -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Language" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Language}" FontSize="15" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="&#x4E2D;&#x6587;" Width="90" Margin="0,0,8,0"
+                        <Button Content="{DynamicResource str_Chinese}" Width="90" Margin="0,0,8,0"
                                 Command="{Binding SwitchToChineseCommand}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -44,7 +44,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Content="English" Width="90"
+                        <Button Content="{DynamicResource str_English}" Width="90"
                                 Command="{Binding SwitchToEnglishCommand}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -64,9 +64,9 @@
             <!-- Server control -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Server" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Server}" FontSize="15" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
-                    <Button Content="Kill OAS Server"
+                    <Button Content="{DynamicResource str_KillServer}"
                             Command="{Binding KillServerCommand}"
                             MinWidth="160"
                             Foreground="#F44336"
@@ -79,9 +79,9 @@
             <!-- Account -->
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="Account" FontSize="15" FontWeight="SemiBold"
+                    <TextBlock Text="{DynamicResource str_Account}" FontSize="15" FontWeight="SemiBold"
                                Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
-                    <Button Content="Log Out"
+                    <Button Content="{DynamicResource str_LogOut}"
                             Command="{Binding LogoutCommand}"
                             MinWidth="160"
                             HorizontalAlignment="Left"/>

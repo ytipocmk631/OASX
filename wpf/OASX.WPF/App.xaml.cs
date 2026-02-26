@@ -31,6 +31,11 @@ public partial class App : Application
         // Apply saved theme on startup
         ApplyTheme(_settingsService.Settings.Theme == "Dark");
 
+        // Apply saved language on startup
+        var lang = _settingsService.Settings.Language;
+        LocalizationService.Instance.CurrentLanguage = lang;
+        ApplyLanguage(lang);
+
         var loginWindow = CreateLoginWindow();
         loginWindow.Show();
     }
@@ -51,8 +56,28 @@ public partial class App : Application
     {
         var settingsVm = new SettingsViewModel(_settingsService!, _apiService!);
         settingsVm.ThemeChanged += (_, isDark) => ApplyTheme(isDark);
+        settingsVm.LanguageChanged += (_, lang) =>
+        {
+            LocalizationService.Instance.CurrentLanguage = lang;
+            ApplyLanguage(lang);
+        };
         var mainVm = new MainViewModel(_apiService!, _wsService!, settingsVm);
         return new MainWindow(mainVm);
+    }
+
+    /// <summary>
+    /// Swaps the merged language ResourceDictionary to reflect the selected locale.
+    /// All DynamicResource bindings in XAML update automatically.
+    /// </summary>
+    public static void ApplyLanguage(string lang)
+    {
+        var uri = lang == "zh-CN"
+            ? new Uri("Resources/Strings.zh-CN.xaml", UriKind.Relative)
+            : new Uri("Resources/Strings.en-US.xaml", UriKind.Relative);
+
+        var mergedDicts = Current.Resources.MergedDictionaries;
+        // The language dictionary is always at index 0 (added first in App.xaml)
+        mergedDicts[0] = new ResourceDictionary { Source = uri };
     }
 
     /// <summary>

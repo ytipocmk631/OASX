@@ -76,7 +76,7 @@
                 BorderBrush="#CCCCCC" BorderThickness="0,0,1,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top"
-                           Text="Scripts"
+                           Text="{DynamicResource str_Scripts}"
                            FontSize="12" FontWeight="SemiBold"
                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Padding="10,8"/>
@@ -108,8 +108,8 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Rename" Click="MenuItem_Rename"/>
-                            <MenuItem Header="Delete" Click="MenuItem_Delete"/>
+                            <MenuItem Header="{DynamicResource str_Rename}" Click="MenuItem_Rename"/>
+                            <MenuItem Header="{DynamicResource str_Delete}" Click="MenuItem_Delete"/>
                         </ContextMenu>
                     </ListBox.ContextMenu>
                 </ListBox>
@@ -121,7 +121,7 @@
                 BorderBrush="#CCCCCC" BorderThickness="0,0,1,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top"
-                           Text="Tasks"
+                           Text="{DynamicResource str_Tasks}"
                            FontSize="12" FontWeight="SemiBold"
                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Padding="10,8"/>
@@ -133,7 +133,7 @@
                          SelectionChanged="TaskList_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}" FontSize="12">
+                            <TextBlock Text="{Binding DisplayName}" FontSize="12">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding" Value="10,4"/>

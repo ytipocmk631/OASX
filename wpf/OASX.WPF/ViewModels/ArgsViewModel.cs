@@ -37,7 +37,7 @@ public partial class ArgsViewModel : ObservableObject
     {
         _scriptName = scriptName;
         _taskName = taskName;
-        Title = taskName;
+        Title = LocalizationService.Instance.Translate(taskName);
         StatusMessage = string.Empty;
         IsLoading = true;
         Groups.Clear();
@@ -47,7 +47,7 @@ public partial class ArgsViewModel : ObservableObject
             var json = await _api.GetScriptTaskArgsAsync(scriptName, taskName);
             if (json == null)
             {
-                StatusMessage = "Failed to load arguments.";
+                StatusMessage = LocalizationService.Instance.Translate("Failed to load arguments.");
                 return;
             }
 
@@ -62,7 +62,8 @@ public partial class ArgsViewModel : ObservableObject
                             members.Add(ParseArg(groupName, obj));
                     }
                 }
-                Groups.Add(new ArgGroupModel { GroupName = groupName, Members = members });
+                var translatedGroupName = LocalizationService.Instance.Translate(groupName);
+                Groups.Add(new ArgGroupModel { GroupName = groupName, TranslatedGroupName = translatedGroupName, Members = members });
             }
         }
         catch (Exception ex)
@@ -90,11 +91,16 @@ public partial class ArgsViewModel : ObservableObject
         if (obj["enumEnum"] is JsonArray enumArr)
             enumOptions = enumArr.Select(e => e?.ToString() ?? string.Empty).ToList();
 
+        var rawName = obj["name"]?.ToString() ?? string.Empty;
+        var rawDesc = obj["description"]?.ToString();
+
         var arg = new ArgModel
         {
-            Name = obj["name"]?.ToString() ?? string.Empty,
+            Name = rawName,
+            TranslatedName = LocalizationService.Instance.Translate(rawName),
             Type = type,
-            Description = obj["description"]?.ToString(),
+            Description = rawDesc,
+            TranslatedDescription = rawDesc == null ? null : LocalizationService.Instance.Translate(rawDesc),
             Value = value,
             EnumOptions = enumOptions,
         };

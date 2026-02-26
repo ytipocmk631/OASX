@@ -49,7 +49,7 @@ public partial class ArgsView : UserControl
         {
             ArgsContainer.Children.Add(new TextBlock
             {
-                Text = "No arguments available.",
+                Text = Services.LocalizationService.Instance.Translate("No arguments available."),
                 Foreground = Brushes.Gray,
                 Margin = new Thickness(0, 20, 0, 0),
                 FontSize = 13
@@ -76,7 +76,7 @@ public partial class ArgsView : UserControl
 
         return new Expander
         {
-            Header = group.GroupName,
+            Header = string.IsNullOrEmpty(group.TranslatedGroupName) ? group.GroupName : group.TranslatedGroupName,
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
             IsExpanded = true,
@@ -93,17 +93,19 @@ public partial class ArgsView : UserControl
 
         // Left: label + description
         var labelPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        var displayName = string.IsNullOrEmpty(arg.TranslatedName) ? arg.Name : arg.TranslatedName;
         labelPanel.Children.Add(new TextBlock
         {
-            Text = arg.Name,
+            Text = displayName,
             FontSize = 13,
             TextWrapping = TextWrapping.Wrap
         });
-        if (!string.IsNullOrWhiteSpace(arg.Description))
+        var displayDesc = string.IsNullOrEmpty(arg.TranslatedDescription) ? arg.Description : arg.TranslatedDescription;
+        if (!string.IsNullOrWhiteSpace(displayDesc))
         {
             labelPanel.Children.Add(new TextBlock
             {
-                Text = arg.Description,
+                Text = displayDesc,
                 FontSize = 11,
                 Foreground = (System.Windows.Media.Brush)Application.Current.Resources["SecondaryForegroundBrush"],
                 TextWrapping = TextWrapping.Wrap

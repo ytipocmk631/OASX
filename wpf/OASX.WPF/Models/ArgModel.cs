@@ -6,8 +6,10 @@ namespace OASX.WPF.Models;
 public class ArgModel
 {
     public string Name { get; init; } = string.Empty;
+    public string TranslatedName { get; set; } = string.Empty;
     public string Type { get; init; } = "string";
     public string? Description { get; init; }
+    public string? TranslatedDescription { get; set; }
     public List<string> EnumOptions { get; init; } = [];
     public object? Value { get; set; }
 
@@ -21,6 +23,7 @@ public class ArgModel
 public class ArgGroupModel
 {
     public string GroupName { get; init; } = string.Empty;
+    public string TranslatedGroupName { get; set; } = string.Empty;
     public List<ArgModel> Members { get; init; } = [];
 }
 
@@ -32,4 +35,7 @@ public class MenuItemModel
 {
     public string Name { get; init; } = string.Empty;
     public bool IsHeader { get; init; }
+
+    /// <summary>Translated display name using the current LocalizationService language.</summary>
+    public string DisplayName => Services.LocalizationService.Instance.Translate(Name);
 }

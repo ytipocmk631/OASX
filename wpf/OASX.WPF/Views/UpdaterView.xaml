@@ -36,10 +36,10 @@
                                        Foreground="{DynamicResource ForegroundBrush}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="Already on the latest version"/>
+                                        <Setter Property="Text" Value="{DynamicResource str_UpToDate}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding HasUpdate}" Value="True">
-                                                <Setter Property="Text" Value="New version available"/>
+                                                <Setter Property="Text" Value="{DynamicResource str_NewVersionAvailable}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -47,14 +47,14 @@
                             </TextBlock>
                             <TextBlock FontSize="13"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}">
-                                <Run Text="Branch: "/>
+                                <Run Text="{DynamicResource str_Branch}"/>
                                 <Run Text="{Binding Branch}"/>
                             </TextBlock>
                         </StackPanel>
 
                         <!-- Execute Update button -->
                         <Button DockPanel.Dock="Right"
-                                Content="Execute Update"
+                                Content="{DynamicResource str_ExecuteUpdate}"
                                 Command="{Binding ExecuteUpdateCommand}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
@@ -66,7 +66,7 @@
                 <!-- Commit comparison table -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="Commit Comparison" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock Text="{DynamicResource str_CommitComparison}" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,8"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -79,16 +79,16 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Repo"
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource str_Repo}"
                                        FontWeight="SemiBold" FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                                        Margin="0,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="SHA  Author  Time  Message"
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{DynamicResource str_SHA_Header}"
                                        FontSize="12" FontStyle="Italic"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                                        Margin="0,2"/>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Local"
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource str_Local}"
                                        FontSize="12"
                                        Foreground="{DynamicResource ForegroundBrush}"
                                        Margin="0,2"/>
@@ -98,7 +98,7 @@
                                        Foreground="{DynamicResource ForegroundBrush}"
                                        TextWrapping="Wrap" Margin="0,2"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Remote"
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource str_Remote}"
                                        FontSize="12"
                                        Foreground="{DynamicResource ForegroundBrush}"
                                        Margin="0,2"/>
@@ -114,7 +114,7 @@
                 <!-- Commit history (built in code-behind) -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Commit History" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock Text="{DynamicResource str_CommitHistory}" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,8"/>
                         <ItemsControl x:Name="CommitHistoryList">
                             <ItemsControl.ItemTemplate>
