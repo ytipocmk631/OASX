@@ -9,6 +9,8 @@ public partial class MainWindow : Window
     private readonly MainViewModel _vm;
     // Prevents double-firing when InitializeAsync sets SelectedScriptName programmatically
     private bool _suppressSelectionChange = false;
+    // Prevents spurious SelectTaskAsync calls when task list is repopulated during script switching
+    private bool _suppressTaskSelectionChange = false;
 
     public MainWindow(MainViewModel vm)
     {
@@ -21,8 +23,13 @@ public partial class MainWindow : Window
         Loaded += async (_, _) =>
         {
             _suppressSelectionChange = true;
+            _suppressTaskSelectionChange = true;
             try { await vm.InitializeAsync(); }
-            finally { _suppressSelectionChange = false; }
+            finally
+            {
+                _suppressSelectionChange = false;
+                _suppressTaskSelectionChange = false;
+            }
         };
     }
 
@@ -30,11 +37,16 @@ public partial class MainWindow : Window
     {
         if (_suppressSelectionChange) return;
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is string name)
-            await _vm.SelectScriptAsync(name);
+        {
+            _suppressTaskSelectionChange = true;
+            try { await _vm.SelectScriptAsync(name); }
+            finally { _suppressTaskSelectionChange = false; }
+        }
     }
 
     private async void TaskList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressTaskSelectionChange) return;
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is Models.MenuItemModel item && !item.IsHeader)
             await _vm.SelectTaskAsync(item.Name);
     }

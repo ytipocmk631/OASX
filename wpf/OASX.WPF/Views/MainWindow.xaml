@@ -82,7 +82,7 @@
                            Padding="10,8"/>
                 <ListBox x:Name="ScriptListBox"
                          ItemsSource="{Binding ScriptNames}"
-                         SelectedItem="{Binding SelectedScriptName}"
+                         SelectedItem="{Binding SelectedScriptName, Mode=OneWay}"
                          Background="Transparent"
                          BorderThickness="0"
                          SelectionChanged="ScriptList_SelectionChanged">
@@ -127,6 +127,7 @@
                            Padding="10,8"/>
                 <ListBox x:Name="TaskListBox"
                          ItemsSource="{Binding TaskMenuItems}"
+                         SelectedItem="{Binding SelectedTaskItem, Mode=OneWay}"
                          Background="Transparent"
                          BorderThickness="0"
                          SelectionChanged="TaskList_SelectionChanged">

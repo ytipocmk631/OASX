@@ -32,6 +32,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string? _selectedTask;
 
+    /// <summary>The MenuItemModel currently selected in the task list (for visual feedback).</summary>
+    [ObservableProperty]
+    private MenuItemModel? _selectedTaskItem;
+
     /// <summary>All script models, keyed by name.</summary>
     private readonly Dictionary<string, ScriptModel> _scriptModels = [];
 
@@ -81,7 +85,7 @@ public partial class MainViewModel : ObservableObject
         if (isHome)
         {
             // Home script: no WebSocket; show the home welcome page
-            SelectedTask = "Home";
+            SetSelectedTask("Home");
             CurrentView = new HomeViewModel();
         }
         else
@@ -99,9 +103,19 @@ public partial class MainViewModel : ObservableObject
             OverviewVm = overviewVm;
             OnPropertyChanged(nameof(OverviewVm));
 
-            SelectedTask = "Overview";
+            SetSelectedTask("Overview");
             CurrentView = overviewVm;
         }
+    }
+
+    /// <summary>Sets both SelectedTask and SelectedTaskItem atomically.</summary>
+    private void SetSelectedTask(string? taskName)
+    {
+        SelectedTask = taskName;
+        SelectedTaskItem = taskName == null
+            ? null
+            : TaskMenuItems.FirstOrDefault(m => !m.IsHeader &&
+                string.Equals(m.Name, taskName, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task LoadTaskMenuAsync(string scriptName)
@@ -138,7 +152,7 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Called when user clicks a task in the task-menu panel.</summary>
     public async Task SelectTaskAsync(string taskName)
     {
-        SelectedTask = taskName;
+        SetSelectedTask(taskName);
         bool isHome = string.Equals(SelectedScriptName, "Home", StringComparison.OrdinalIgnoreCase);
 
         if (isHome)
@@ -185,7 +199,7 @@ public partial class MainViewModel : ObservableObject
     private void ShowSettings()
     {
         CurrentView = SettingsVm;
-        SelectedTask = null;
+        SetSelectedTask(null);
     }
 
     [RelayCommand]
