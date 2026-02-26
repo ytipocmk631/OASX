@@ -13,18 +13,20 @@ public enum ScriptState
 
 public class TaskItemModel
 {
-    public string Id { get; set; } = string.Empty;
     public string TaskName { get; set; } = string.Empty;
+    public string NextRun { get; set; } = string.Empty;
 
     public TaskItemModel() { }
 
-    public TaskItemModel(string id, string taskName)
+    public TaskItemModel(string taskName, string nextRun)
     {
-        Id = id;
         TaskName = taskName;
+        NextRun = nextRun;
     }
 
-    public override string ToString() => string.IsNullOrEmpty(TaskName) ? Id : $"{TaskName} ({Id})";
+    public bool HasNoTaskData => string.IsNullOrEmpty(TaskName) && string.IsNullOrEmpty(NextRun);
+
+    public override string ToString() => string.IsNullOrEmpty(NextRun) ? TaskName : $"{TaskName} ({NextRun})";
 }
 
 public partial class ScriptModel : ObservableObject

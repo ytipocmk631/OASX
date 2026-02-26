@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using OASX.WPF.Models;
 using OASX.WPF.Services;
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace OASX.WPF.ViewModels;
@@ -52,65 +51,89 @@ public partial class OverviewViewModel : ObservableObject
     {
         App.Current.Dispatcher.Invoke(() =>
         {
+            // Non-JSON messages go straight to the log
+            if (!message.StartsWith("{") || !message.EndsWith("}"))
+            {
+                AppendLog(message);
+                return;
+            }
+
             try
             {
                 var node = JsonNode.Parse(message);
                 if (node is JsonObject obj)
                 {
-                    // Parse script state
-                    if (obj["state"] != null)
+                    // State update: {"state": 0|1|2|3}
+                    if (obj["state"] is JsonNode stateNode)
                     {
-                        var stateVal = obj["state"]!.GetValue<int>();
-                        Script.Update(state: (ScriptState)stateVal);
+                        Script.Update(state: (ScriptState)stateNode.GetValue<int>());
                     }
 
-                    // Parse running task
-                    if (obj["running"] is JsonObject running)
+                    // Schedule update: {"schedule": {"running": {...}, "pending": [...], "waiting": [...]}}
+                    if (obj["schedule"] is JsonObject schedule)
                     {
-                        Script.Update(runningTask: new TaskItemModel(
-                            running["id"]?.ToString() ?? "",
-                            running["task"]?.ToString() ?? ""));
-                    }
+                        // Running task
+                        TaskItemModel runningTask = new();
+                        if (schedule["running"] is JsonObject running &&
+                            running["name"]?.ToString() is string runName &&
+                            !string.IsNullOrEmpty(runName))
+                        {
+                            runningTask = new TaskItemModel(
+                                runName,
+                                running["next_run"]?.ToString() ?? string.Empty);
+                        }
 
-                    // Parse pending list
-                    if (obj["pending"] is JsonArray pending)
-                    {
-                        Script.Update(pendingTaskList: pending
-                            .Select(t => new TaskItemModel(
-                                t?["id"]?.ToString() ?? "",
-                                t?["task"]?.ToString() ?? ""))
-                            .ToList());
-                    }
+                        // Pending list
+                        var pendingList = new List<TaskItemModel>();
+                        if (schedule["pending"] is JsonArray pending)
+                        {
+                            pendingList = pending
+                                .OfType<JsonObject>()
+                                .Select(t => new TaskItemModel(
+                                    t["name"]?.ToString() ?? string.Empty,
+                                    t["next_run"]?.ToString() ?? string.Empty))
+                                .ToList();
+                        }
 
-                    // Parse waiting list
-                    if (obj["waiting"] is JsonArray waiting)
-                    {
-                        Script.Update(waitingTaskList: waiting
-                            .Select(t => new TaskItemModel(
-                                t?["id"]?.ToString() ?? "",
-                                t?["task"]?.ToString() ?? ""))
-                            .ToList());
+                        // Waiting list
+                        var waitingList = new List<TaskItemModel>();
+                        if (schedule["waiting"] is JsonArray waiting)
+                        {
+                            waitingList = waiting
+                                .OfType<JsonObject>()
+                                .Select(t => new TaskItemModel(
+                                    t["name"]?.ToString() ?? string.Empty,
+                                    t["next_run"]?.ToString() ?? string.Empty))
+                                .ToList();
+                        }
+
+                        Script.Update(
+                            runningTask: runningTask,
+                            pendingTaskList: pendingList,
+                            waitingTaskList: waitingList);
                     }
                 }
+            }
+            catch { /* ignore parse errors */ }
 
-                // Append raw message to log (keep last 500 lines)
-                Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-                while (Logs.Count > 500)
-                    Logs.RemoveAt(0);
-            }
-            catch
-            {
-                Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-            }
+            AppendLog(message);
         });
+    }
+
+    private void AppendLog(string message)
+    {
+        Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+        while (Logs.Count > 500)
+            Logs.RemoveAt(0);
     }
 
     [RelayCommand]
     public async Task ToggleScriptAsync()
     {
         if (_wsClient == null) return;
+        // Server expects plain string "start" or "stop" (not JSON)
         var action = Script.State == ScriptState.Running ? "stop" : "start";
-        await _wsClient.SendAsync(JsonSerializer.Serialize(new { action }));
+        await _wsClient.SendAsync(action);
     }
 
     public async Task DisconnectAsync()

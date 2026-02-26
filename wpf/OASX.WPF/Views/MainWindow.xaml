@@ -23,6 +23,15 @@
         <DataTemplate DataType="{x:Type vm:ArgsViewModel}">
             <views:ArgsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+            <views:HomeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UpdaterViewModel}">
+            <views:UpdaterView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ToolViewModel}">
+            <views:ToolView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>

@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using OASX.WPF.Models;
 
 namespace OASX.WPF.Services;
 
@@ -172,7 +173,60 @@ public class ApiService
         catch { return false; }
     }
 
-    // ---------- Helpers ----------
+    // ---------- Home views ----------
+
+    public async Task<UpdateInfoModel> GetUpdateInfoAsync()
+    {
+        try
+        {
+            var json = await GetStringAsync("/home/update_info");
+            if (string.IsNullOrWhiteSpace(json)) return new();
+            var node = JsonNode.Parse(json) as JsonObject;
+            if (node == null) return new();
+            return new UpdateInfoModel
+            {
+                IsUpdate = node["is_update"]?.GetValue<bool>() ?? false,
+                Branch = node["branch"]?.ToString() ?? string.Empty,
+                CurrentCommit = ParseStringList(node["current_commit"]),
+                LatestCommit = ParseStringList(node["latest_commit"]),
+                Commit = ParseStringListList(node["commit"]),
+            };
+        }
+        catch { return new(); }
+    }
+
+    public async Task<string> ExecuteUpdateAsync()
+    {
+        try { return (await GetStringAsync("/home/execute_update"))?.Trim('"') ?? string.Empty; }
+        catch { return string.Empty; }
+    }
+
+    public async Task<bool> NotifyTestAsync(string setting, string title, string content)
+    {
+        try
+        {
+            var url = $"{_baseUrl}/home/notify_test?setting={Uri.EscapeDataString(setting)}&title={Uri.EscapeDataString(title)}&content={Uri.EscapeDataString(content)}";
+            var response = await _http.PostAsync(url, null);
+            var json = await response.Content.ReadAsStringAsync();
+            return json.Trim() == "true";
+        }
+        catch { return false; }
+    }
+
+    private static List<string> ParseStringList(JsonNode? node)
+    {
+        if (node is not JsonArray arr) return [];
+        return arr.Select(v => v?.ToString() ?? string.Empty).ToList();
+    }
+
+    private static List<List<string>> ParseStringListList(JsonNode? node)
+    {
+        if (node is not JsonArray outer) return [];
+        return outer
+            .OfType<JsonArray>()
+            .Select(inner => inner.Select(v => v?.ToString() ?? string.Empty).ToList())
+            .ToList();
+    }
 
     private async Task<string?> GetStringAsync(string path)
     {

@@ -38,9 +38,6 @@ public partial class MainViewModel : ObservableObject
     public OverviewViewModel? OverviewVm { get; private set; }
     public SettingsViewModel SettingsVm { get; }
 
-    private static readonly HashSet<string> OverviewTasks =
-        new(StringComparer.OrdinalIgnoreCase) { "Overview", "Home", "Updater", "Tool" };
-
     public MainViewModel(ApiService api, WebSocketService wsService, SettingsViewModel settingsVm)
     {
         _api = api;
@@ -57,7 +54,6 @@ public partial class MainViewModel : ObservableObject
             await SelectScriptInternalAsync(ScriptNames[0]);
     }
 
-    // Called from code-behind when user clicks the script list
     [RelayCommand]
     public async Task SelectScriptAsync(string name)
     {
@@ -66,54 +62,68 @@ public partial class MainViewModel : ObservableObject
 
     private async Task SelectScriptInternalAsync(string name)
     {
-        if (SelectedScriptName == name && OverviewVm != null)
-            return; // already selected
+        if (SelectedScriptName == name) return; // already selected
 
         SelectedScriptName = name;
 
-        // Disconnect the previous overview before switching
+        // Disconnect any previous WebSocket
         if (OverviewVm != null)
-            await OverviewVm.DisconnectAsync();
-
-        if (!_scriptModels.TryGetValue(name, out var model))
         {
-            model = new ScriptModel(name);
-            _scriptModels[name] = model;
+            await OverviewVm.DisconnectAsync();
+            OverviewVm = null;
+            OnPropertyChanged(nameof(OverviewVm));
         }
 
-        SelectedScript = model;
-        var overviewVm = new OverviewViewModel(model, _api, _wsService);
-        await overviewVm.ConnectAsync();
-        OverviewVm = overviewVm;
-        OnPropertyChanged(nameof(OverviewVm));
-
-        // Load the task menu for this script
+        // Load task menu for this script
         await LoadTaskMenuAsync(name);
 
-        // Show overview by default
-        SelectedTask = "Overview";
-        CurrentView = overviewVm;
+        bool isHome = string.Equals(name, "Home", StringComparison.OrdinalIgnoreCase);
+        if (isHome)
+        {
+            // Home script: no WebSocket; show the home welcome page
+            SelectedTask = "Home";
+            CurrentView = new HomeViewModel();
+        }
+        else
+        {
+            // Non-Home script: create ScriptModel + connect WebSocket
+            if (!_scriptModels.TryGetValue(name, out var model))
+            {
+                model = new ScriptModel(name);
+                _scriptModels[name] = model;
+            }
+            SelectedScript = model;
+
+            var overviewVm = new OverviewViewModel(model, _api, _wsService);
+            await overviewVm.ConnectAsync();
+            OverviewVm = overviewVm;
+            OnPropertyChanged(nameof(OverviewVm));
+
+            SelectedTask = "Overview";
+            CurrentView = overviewVm;
+        }
     }
 
     private async Task LoadTaskMenuAsync(string scriptName)
     {
+        bool isHome = string.Equals(scriptName, "Home", StringComparison.OrdinalIgnoreCase);
+
         Dictionary<string, List<string>> menu;
-        if (string.Equals(scriptName, "Home", StringComparison.OrdinalIgnoreCase))
+        if (isHome)
             menu = await _api.GetHomeMenuAsync();
         else
             menu = await _api.GetScriptMenuAsync();
 
-        var items = new List<MenuItemModel>
-        {
-            new() { Name = "Overview", IsHeader = false }
-        };
+        var items = new List<MenuItemModel>();
+
+        // For non-Home scripts, always have "Overview" as the first task
+        if (!isHome)
+            items.Add(new MenuItemModel { Name = "Overview", IsHeader = false });
 
         foreach (var (key, values) in menu)
         {
             if (values.Count == 0)
-            {
                 items.Add(new MenuItemModel { Name = key, IsHeader = false });
-            }
             else
             {
                 items.Add(new MenuItemModel { Name = key, IsHeader = true });
@@ -129,17 +139,36 @@ public partial class MainViewModel : ObservableObject
     public async Task SelectTaskAsync(string taskName)
     {
         SelectedTask = taskName;
+        bool isHome = string.Equals(SelectedScriptName, "Home", StringComparison.OrdinalIgnoreCase);
 
-        if (OverviewTasks.Contains(taskName))
+        if (isHome)
         {
-            // Show the overview/scheduler page
+            // Route home-specific tasks to their dedicated ViewModels
+            if (string.Equals(taskName, "Updater", StringComparison.OrdinalIgnoreCase))
+            {
+                var uvm = new UpdaterViewModel(_api);
+                CurrentView = uvm;
+                await uvm.LoadAsync();
+            }
+            else if (string.Equals(taskName, "Tool", StringComparison.OrdinalIgnoreCase))
+            {
+                CurrentView = new ToolViewModel(_api);
+            }
+            else
+            {
+                // "Home" task or anything else under Home → home welcome page
+                CurrentView = new HomeViewModel();
+            }
+        }
+        else if (string.Equals(taskName, "Overview", StringComparison.OrdinalIgnoreCase))
+        {
             CurrentView = OverviewVm;
         }
-        else if (!string.IsNullOrEmpty(SelectedScriptName) &&
-                 !string.Equals(SelectedScriptName, "Home", StringComparison.OrdinalIgnoreCase))
+        else if (!string.IsNullOrEmpty(SelectedScriptName))
         {
+            // Any other task for a non-Home script → load args
             var argsVm = new ArgsViewModel(_api);
-            CurrentView = argsVm; // show loading state immediately
+            CurrentView = argsVm;
             await argsVm.LoadAsync(SelectedScriptName, taskName);
         }
     }
