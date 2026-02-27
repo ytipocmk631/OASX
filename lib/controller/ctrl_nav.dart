@@ -6,6 +6,10 @@ class NavCtrl extends GetxController {
   final selectedScript = 'Home'.obs; // 当前选中的名字
   final selectedMenu = 'Home'.obs; // 当前选中的第二级名字
 
+  // 搜索与筛选
+  final searchText = ''.obs;
+  final Rx<ScriptState?> filterState = Rx<ScriptState?>(null);
+
   // 二级菜单控制
   final isHomeMenu = true.obs;
   var homeMenuJson = <String, List<String>>{
@@ -80,6 +84,39 @@ class NavCtrl extends GetxController {
       printInfo(info: 'useablemenus = $result');
     }
     return result;
+  }
+
+  // 过滤后的导航列表（搜索 + 运行状态筛选）
+  List<String> get filteredNavList {
+    final scriptService = Get.find<ScriptService>();
+    final query = searchText.value.toLowerCase();
+    final stateFilter = filterState.value;
+
+    final rest = navNameList.skip(1).where((name) {
+      // 搜索过滤（原始名或翻译名）
+      if (query.isNotEmpty) {
+        final matchName = name.toLowerCase().contains(query);
+        final matchTr = name.tr.toLowerCase().contains(query);
+        if (!matchName && !matchTr) return false;
+      }
+      // 运行状态过滤
+      if (stateFilter != null) {
+        final model = scriptService.scriptModelMap[name];
+        if (model == null || model.state.value != stateFilter) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+
+    return ['Home', ...rest];
+  }
+
+  // 按名称切换脚本（搜索/筛选后下标可能不一致，用名称查真实下标）
+  Future<void> switchScriptByName(String name) async {
+    final idx = navNameList.indexOf(name);
+    if (idx == -1) return;
+    await switchScript(idx);
   }
 
   void switchContent(String menu) {

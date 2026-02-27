@@ -25,6 +25,9 @@ class I18n {
   static const String network_not_found = 'Network Not Found';
   static const String scheduler = 'scheduler';
   static const String running = 'Running';
+  static const String inactive = 'inactive';
+  static const String warning = 'warning';
+  static const String updating = 'updating';
   static const String pending = 'Pendings';
   static const String waiting = 'Waitings';
   static const String task_setting = 'Task Setting';
@@ -82,6 +85,8 @@ class I18n {
   static const String config_add = 'Add new config';
   static const String config_copy_from_exist = 'Copy from existing config';
   static const String setting_saved = 'Setting saved';
+  static const String search = 'search';
+  static const String filter_running = 'filter_running';
 
   // 菜单项相关
   static const String overview = 'Overview';

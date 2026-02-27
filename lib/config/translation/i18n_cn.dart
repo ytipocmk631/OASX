@@ -25,6 +25,9 @@ final Map<String, String> _cn_ui = {
   I18n.network_not_found: '找不到网络',
   I18n.scheduler: '调度器',
   I18n.running: '运行中',
+  I18n.inactive: '已停止',
+  I18n.warning: '警告',
+  I18n.updating: '更新中',
   I18n.pending: '队列中',
   I18n.waiting: '等待中',
   I18n.task_setting: '设置',
@@ -86,6 +89,8 @@ final Map<String, String> _cn_ui = {
   I18n.config_add: '添加新配置',
   I18n.config_copy_from_exist: '复制已有配置',
   I18n.setting_saved: '设置已保存',
+  I18n.search: '搜索',
+  I18n.filter_running: '运行中',
 };
 
 final Map<String, String> _cn_menu = {

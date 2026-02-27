@@ -21,90 +21,166 @@ import 'package:oasx/utils//platform_utils.dart';
 part '../../controller/ctrl_nav.dart';
 part './tree_menu_view.dart';
 
-class Nav extends StatelessWidget {
+class Nav extends StatefulWidget {
   const Nav({Key? key}) : super(key: key);
 
   @override
+  State<Nav> createState() => _NavState();
+}
+
+class _NavState extends State<Nav> {
+  final _searchController = SearchController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              // 保证至少占满屏幕高度，但如果内容更高就让它自适应
-              minHeight: constraints.maxHeight,
-            ),
-            child: IntrinsicHeight(
-              child: _navigationRail(context),
-            ),
-          ),
+    return SizedBox(
+      width: 180,
+      child: GetX<NavCtrl>(builder: (controller) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _searchBar(context, controller),
+            _filterChips(context, controller),
+            Expanded(child: _navList(context, controller)),
+            _trailing(context),
+          ],
         );
-      },
+      }),
     );
   }
 
-  Widget _navigationRail(BuildContext context) {
-    return GetX<NavCtrl>(builder: (controller) {
-      return NavigationRail(
-        selectedIndex: controller.selectedIndex.value,
-        onDestinationSelected: (value) => {controller.switchScript(value)},
-        labelType: NavigationRailLabelType.all, // 就是是否显示文字
-        // elevation: 20, // 影深度
-        useIndicator: true, // 指示器
-        trailing: _trailing(context),
-        minWidth: 48,
-        destinations: _destinations(context, controller.navNameList),
+  Widget _searchBar(BuildContext context, NavCtrl controller) {
+    return Obx(() {
+      final hasText = controller.searchText.value.isNotEmpty;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        child: SearchBar(
+          controller: _searchController,
+          hintText: I18n.search.tr,
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 8),
+          ),
+          constraints: const BoxConstraints(minHeight: 36),
+          leading: null,
+          trailing: hasText
+              ? [
+                  GestureDetector(
+                    onTap: () {
+                      _searchController.clear();
+                      controller.searchText.value = '';
+                    },
+                    child: const Icon(Icons.clear, size: 16),
+                  )
+                ]
+              : null,
+          onChanged: (v) => controller.searchText.value = v,
+          elevation: const WidgetStatePropertyAll(0),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                color: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+        ),
       );
     });
   }
 
-  List<NavigationRailDestination> _destinations(
-      BuildContext context, List<String> names) {
-    if (names.length <= 1) {
-      return [
-        NavigationRailDestination(
-            icon: const Icon(Icons.home_rounded),
-            label: Text(
-              'Home'.tr,
-            )),
-        NavigationRailDestination(
-            icon: const Icon(Icons.home_rounded), label: Text('oas1'.tr))
-      ];
-    }
-    return names.map((element) {
-      if (element == 'Home') {
-        return NavigationRailDestination(
-            icon: const Icon(Icons.home_rounded),
-            label: Text(
-              element.tr,
-              style: Theme.of(context).textTheme.labelMedium,
-            ));
-      }
-      return NavigationRailDestination(
-          icon: GestureDetector(
-              child: const Icon(Icons.play_circle),
-              onSecondaryTapDown: (details) {
-                if (PlatformUtils.isMobile) return;
-                _showContextMenu(context, details.globalPosition, element);
-              },
-              onLongPressStart: (details) {
-                if (!PlatformUtils.isMobile) return;
-                _showContextMenu(context, details.globalPosition, element);
-              }),
-          label: GestureDetector(
-              child: Text(
-                element.tr,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              onSecondaryTapDown: (details) {
-                if (PlatformUtils.isMobile) return;
-                _showContextMenu(context, details.globalPosition, element);
-              },
-              onLongPressStart: (details) {
-                if (!PlatformUtils.isMobile) return;
-                _showContextMenu(context, details.globalPosition, element);
-              }));
-    }).toList();
+  Widget _filterChips(BuildContext context, NavCtrl controller) {
+    final states = [
+      (ScriptState.running, I18n.filter_running.tr),
+      (ScriptState.inactive, I18n.inactive.tr),
+      (ScriptState.warning, I18n.warning.tr),
+    ];
+    return Obx(() {
+      final current = controller.filterState.value;
+      return Wrap(
+        spacing: 4,
+        runSpacing: 2,
+        children: states.map((entry) {
+          final (state, label) = entry;
+          final isSelected = current == state;
+          return FilterChip(
+            label: Text(label,
+                style: Theme.of(context).textTheme.labelSmall),
+            selected: isSelected,
+            showCheckmark: false,
+            avatar: null,
+            onSelected: (v) {
+              controller.filterState.value = v ? state : null;
+            },
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+            selectedColor:
+                Theme.of(context).colorScheme.primaryContainer,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          );
+        }).toList(),
+      ).padding(horizontal: 6, bottom: 4);
+    });
+  }
+
+  Widget _navList(BuildContext context, NavCtrl controller) {
+    final scriptService = Get.find<ScriptService>();
+    return Obx(() {
+      // 订阅 scriptModelMap 及每个 model 的 state 以响应运行状态变化
+      scriptService.scriptModelMap.forEach((k, v) => v.state.value);
+      final list = controller.filteredNavList;
+      return ListView.builder(
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          final name = list[index];
+          final isSelected = controller.selectedScript.value == name;
+          return _navItem(context, controller, name, isSelected);
+        },
+      );
+    });
+  }
+
+  Widget _navItem(BuildContext context, NavCtrl controller, String name,
+      bool isSelected) {
+    return GestureDetector(
+      onSecondaryTapDown: name == 'Home'
+          ? null
+          : (details) {
+              if (PlatformUtils.isMobile) return;
+              _showContextMenu(context, details.globalPosition, name);
+            },
+      onLongPressStart: name == 'Home'
+          ? null
+          : (details) {
+              if (!PlatformUtils.isMobile) return;
+              _showContextMenu(context, details.globalPosition, name);
+            },
+      child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        selected: isSelected,
+        selectedTileColor:
+            Theme.of(context).colorScheme.secondaryContainer,
+        title: Text(
+          name.tr,
+          style: Theme.of(context).textTheme.labelMedium,
+          overflow: TextOverflow.ellipsis,
+        ),
+        onTap: () => controller.switchScriptByName(name),
+      ),
+    );
   }
 
   Widget _trailing(BuildContext context) {
