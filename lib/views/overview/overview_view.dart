@@ -13,6 +13,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/config/translation/i18n_content.dart';
+import 'package:oasx/api/api_client.dart';
 
 part '../../controller/overview/overview_controller.dart';
 part '../../controller/overview/taskitem_model.dart';
@@ -84,7 +85,7 @@ class _WaitingWidget extends StatelessWidget {
       Expanded(child: Obx(() {
         return ListView.builder(
             itemBuilder: (context, index) =>
-                TaskItemView(controller.scriptModel.waitingTaskList[index]),
+                _buildDraggableTask(controller.scriptModel.waitingTaskList[index]),
             itemCount: controller.scriptModel.waitingTaskList.length);
       }))
     ]
@@ -115,7 +116,7 @@ class _PendingWidget extends StatelessWidget {
           child: Obx(() {
             return ListView.builder(
                 itemBuilder: (context, index) =>
-                    TaskItemView(controller.scriptModel.pendingTaskList[index]),
+                    _buildDraggableTask(controller.scriptModel.pendingTaskList[index]),
                 itemCount: controller.scriptModel.pendingTaskList.length);
           }))
     ]
@@ -134,18 +135,39 @@ class _RunningWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return <Widget>[
-      Text(I18n.running.tr,
-          textAlign: TextAlign.left,
-          style: Theme.of(context).textTheme.titleMedium),
-      const Divider(),
-      Obx(() {
-        return TaskItemView(controller.scriptModel.runningTask.value);
-      })
-    ]
-        .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-        .padding(top: 8, bottom: 0, left: 8, right: 8)
-        .card(margin: const EdgeInsets.fromLTRB(10, 0, 10, 10));
+    return DragTarget<TaskItemModel>(
+      onWillAcceptWithDetails: (details) => true,
+      onAcceptWithDetails: (details) {
+        final past = DateTime.now().subtract(const Duration(seconds: 1));
+        final formatted =
+            '${past.year}-${past.month.toString().padLeft(2, '0')}-'
+            '${past.day.toString().padLeft(2, '0')} '
+            '${past.hour.toString().padLeft(2, '0')}:'
+            '${past.minute.toString().padLeft(2, '0')}:'
+            '${past.second.toString().padLeft(2, '0')}';
+        controller.setTaskEnabled(details.data.taskName, formatted);
+      },
+      builder: (context, candidateData, rejectedData) {
+        final isHovering = candidateData.isNotEmpty;
+        return Card(
+          margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          color: isHovering
+              ? Theme.of(context).colorScheme.primaryContainer
+              : null,
+          child: <Widget>[
+            Text(I18n.running.tr,
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.titleMedium),
+            const Divider(),
+            Obx(() {
+              return TaskItemView(controller.scriptModel.runningTask.value);
+            })
+          ]
+              .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
+              .padding(top: 8, bottom: 0, left: 8, right: 8),
+        );
+      },
+    );
   }
 }
 
@@ -192,4 +214,24 @@ class _SchedulerWidget extends StatelessWidget {
         .paddingOnly(left: 8, right: 8)
         .card(margin: const EdgeInsets.fromLTRB(10, 0, 10, 10));
   }
+}
+
+Widget _buildDraggableTask(TaskItemModel item) {
+  return Draggable<TaskItemModel>(
+    data: item,
+    feedback: Material(
+      elevation: 4,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(item.taskName.tr,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      ),
+    ),
+    childWhenDragging: Opacity(
+      opacity: 0.4,
+      child: TaskItemView(item),
+    ),
+    child: TaskItemView(item),
+  );
 }

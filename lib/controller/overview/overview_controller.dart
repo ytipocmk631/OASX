@@ -26,4 +26,14 @@ class OverviewController extends GetxController with LogMixin {
       scriptService.stopScript(name);
     }
   }
+
+  Future<void> setTaskEnabled(String taskName, String nextRun) async {
+    final api = ApiClient();
+    final current = scriptModel.runningTask.value;
+    if (!current.isAllEmpty()) {
+      await api.putScriptArg(name, current.taskName, 'scheduler', 'enable', 'boolean', false);
+    }
+    await api.putScriptArg(name, taskName, 'scheduler', 'enable', 'boolean', true);
+    await api.putScriptArg(name, taskName, 'scheduler', 'next_run', 'date_time', nextRun);
+  }
 }
