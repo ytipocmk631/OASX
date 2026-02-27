@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oasx/views/layout/appbar.dart';
+import 'package:oasx/views/layout/toolbar.dart';
 
 import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/layout/content.dart';
@@ -16,14 +17,21 @@ class DesktopLayoutView extends StatelessWidget {
   }
 
   Widget body() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        const Nav(),
-        const TreeMenuView(),
+    return Column(
+      children: [
         Expanded(
-          child: Center(child: content()),
-        )
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const Nav(),
+              const TreeMenuView(),
+              Expanded(
+                child: Center(child: content()),
+              )
+            ],
+          ),
+        ),
+        const Toolbar(),
       ],
     );
   }

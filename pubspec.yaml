@@ -67,6 +67,8 @@ dependencies:
   chinese_font_library: ^1.2.0 # 桌面平台中文字体处理
   yaml: ^3.1.2 # yaml文件处理
   logger: ^2.6.2 # 日志
+  ffi: ^2.1.0 # Windows FFI (overlay service)
+  win32: ^5.5.0 # Windows API bindings (overlay service)
 
 flutter_launcher_icons:
   android: true

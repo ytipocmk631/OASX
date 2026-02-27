@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:oasx/service/emulator_overlay_service.dart';
 import 'package:oasx/service/script_service.dart';
 
 import 'package:oasx/views/nav/view_nav.dart';
@@ -10,5 +11,6 @@ class LayoutBinding extends Bindings {
     Get.put<NavCtrl>(permanent: true, NavCtrl()); // 全局唯一的
     Get.lazyPut(fenix: true, () => ArgsController()); // 全局唯一的
     Get.putAsync(() async => ScriptService(), permanent: true);
+    Get.put<EmulatorOverlayService>(EmulatorOverlayService(), permanent: true);
   }
 }
