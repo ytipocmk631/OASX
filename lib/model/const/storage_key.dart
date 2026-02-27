@@ -4,4 +4,5 @@ enum StorageKey {
   username,
   password,
   address,
+  runHistory,
 }

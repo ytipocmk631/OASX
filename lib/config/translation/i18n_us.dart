@@ -31,6 +31,8 @@ final Map<String, String> _us_ui = {
   I18n.inactive: 'Stopped',
   I18n.warning: 'Warning',
   I18n.updating: 'Updating',
+  I18n.run_history: 'Run History',
+  I18n.run_history_empty: 'No run history yet',
 };
 
 final Map<String, String> _us_script = {

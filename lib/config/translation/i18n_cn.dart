@@ -91,6 +91,8 @@ final Map<String, String> _cn_ui = {
   I18n.setting_saved: '设置已保存',
   I18n.search: '搜索',
   I18n.filter_running: '运行中',
+  I18n.run_history: '运行记录',
+  I18n.run_history_empty: '暂无运行记录',
 };
 
 final Map<String, String> _cn_menu = {

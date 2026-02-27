@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,12 @@ class GlobalBehavior extends MaterialScrollBehavior {
 Future<void> initService() async {
   await initLogger();
   await GetStorage.init();
+
+  // 运行记录存储在程序所在目录
+  final historyPath = PlatformUtils.isDesktop
+      ? File(Platform.resolvedExecutable).parent.path
+      : null;
+  await GetStorage('RunHistory', historyPath).initStorage;
 
   await Future.wait([
     Get.putAsync(() async => LocaleService()),

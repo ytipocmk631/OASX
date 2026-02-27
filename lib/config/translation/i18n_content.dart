@@ -87,6 +87,8 @@ class I18n {
   static const String setting_saved = 'Setting saved';
   static const String search = 'search';
   static const String filter_running = 'filter_running';
+  static const String run_history = 'RunHistory';
+  static const String run_history_empty = 'run_history_empty';
 
   // 菜单项相关
   static const String overview = 'Overview';

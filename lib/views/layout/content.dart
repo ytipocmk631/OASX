@@ -3,6 +3,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_getx_widget.dart';
 
 import 'package:oasx/views/args/args_view.dart';
 import 'package:oasx/views/home/home_view.dart';
+import 'package:oasx/views/home/run_history_view.dart';
 import 'package:oasx/views/home/tool_view.dart';
 import 'package:oasx/views/home/updater_view.dart';
 import 'package:oasx/views/nav/view_nav.dart';
@@ -17,6 +18,7 @@ Widget content() {
       ['Home', 'Home'] => const HomeView(),
       ['Home', 'Updater'] => const UpdaterView(),
       ['Home', 'Tool'] => const ToolView(),
+      ['Home', 'RunHistory'] => const RunHistoryView(),
       // ignore: prefer_const_constructors, unused_local_variable
       [String name, 'Overview'] => Overview(),
       _ => const Args(),
