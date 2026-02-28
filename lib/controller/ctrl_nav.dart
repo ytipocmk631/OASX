@@ -17,6 +17,7 @@ class NavCtrl extends GetxController {
     'Updater': [],
     'Tool': [],
     'RunHistory': [],
+    'BatchEdit': [],
   }.obs;
   var scriptMenuJson = <String, List<String>>{}.obs;
 
@@ -31,6 +32,7 @@ class NavCtrl extends GetxController {
     navNameList.value = await ApiClient().getConfigList();
     final fetchedHomeMenu = await ApiClient().getHomeMenu();
     fetchedHomeMenu['RunHistory'] = [];
+    fetchedHomeMenu['BatchEdit'] = [];
     homeMenuJson.value = fetchedHomeMenu;
     scriptMenuJson.value = await ApiClient().getScriptMenu();
 
@@ -129,7 +131,8 @@ class NavCtrl extends GetxController {
     selectedMenu.value = menu;
 
     // args的切换
-    if (['Home', 'Overview', 'Updater', 'Tool', 'RunHistory'].contains(menu)) {
+    if (['Home', 'Overview', 'Updater', 'Tool', 'RunHistory', 'BatchEdit']
+        .contains(menu)) {
       return;
     }
     if (selectedScript.value == 'Home') {

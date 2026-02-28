@@ -236,4 +236,12 @@ class I18n {
   static const String go_oasx_release = 'Click to download';
   static const String tip = 'Tip';
   static const String copy_success = 'Copy success';
+  // 批量配置编辑器
+  static const String batch_edit = 'BatchEdit';
+  static const String batch_edit_load = 'batch_edit_load';
+  static const String batch_edit_apply = 'batch_edit_apply';
+  static const String batch_edit_no_common = 'batch_edit_no_common';
+  static const String batch_edit_select_task = 'batch_edit_select_task';
+  static const String batch_edit_success = 'batch_edit_success';
+  static const String batch_edit_select_scripts = 'batch_edit_select_scripts';
 }

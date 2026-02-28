@@ -93,6 +93,13 @@ final Map<String, String> _cn_ui = {
   I18n.filter_running: '运行中',
   I18n.run_history: '运行记录',
   I18n.run_history_empty: '暂无运行记录',
+  I18n.batch_edit: '批量配置',
+  I18n.batch_edit_load: '加载',
+  I18n.batch_edit_apply: '应用',
+  I18n.batch_edit_no_common: '没有可批量编辑的共同字段',
+  I18n.batch_edit_select_task: '选择任务',
+  I18n.batch_edit_success: '批量设置成功',
+  I18n.batch_edit_select_scripts: '选择脚本',
 };
 
 final Map<String, String> _cn_menu = {

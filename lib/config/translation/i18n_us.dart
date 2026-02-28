@@ -33,6 +33,13 @@ final Map<String, String> _us_ui = {
   I18n.updating: 'Updating',
   I18n.run_history: 'Run History',
   I18n.run_history_empty: 'No run history yet',
+  I18n.batch_edit: 'Batch Edit',
+  I18n.batch_edit_load: 'Load',
+  I18n.batch_edit_apply: 'Apply',
+  I18n.batch_edit_no_common: 'No common fields to batch edit',
+  I18n.batch_edit_select_task: 'Select Task',
+  I18n.batch_edit_success: 'Batch applied successfully',
+  I18n.batch_edit_select_scripts: 'Select Scripts',
 };
 
 final Map<String, String> _us_script = {
