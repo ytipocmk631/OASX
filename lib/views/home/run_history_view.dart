@@ -21,25 +21,37 @@ class RunHistoryView extends StatelessWidget {
         );
       }
 
-      final scriptNames = <String>{};
+      // 按日期分组，日期倒序
+      final grouped = <String, List<MapEntry<String, Map<String, String>>>>{};
       for (final e in entries) {
-        scriptNames.addAll(e.value.keys);
+        final date = e.key.split(' ')[0];
+        grouped.putIfAbsent(date, () => []).add(e);
       }
-      final sortedScripts = scriptNames.toList()..sort();
+      final dates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
       return Column(
         children: [
           _buildToolbar(context, service),
-          _buildHeader(context, sortedScripts),
           Expanded(
-            child: _buildBody(context, entries, sortedScripts),
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              itemCount: dates.length,
+              itemBuilder: (context, index) {
+                final date = dates[index];
+                return _DateGroup(
+                  date: date,
+                  slots: grouped[date]!,
+                  initiallyExpanded: index == 0,
+                  isLatestDate: index == 0,
+                );
+              },
+            ),
           ),
         ],
       );
     });
   }
 
-  // 操作栏
   Widget _buildToolbar(BuildContext context, RunHistoryService service) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
@@ -59,137 +71,133 @@ class RunHistoryView extends StatelessWidget {
       ),
     );
   }
+}
 
-  // 固定表头行
-  Widget _buildHeader(BuildContext context, List<String> scripts) {
-    final theme = Theme.of(context);
-    final headerStyle =
-        theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold);
-    final headerBg = theme.colorScheme.surfaceContainerHighest;
-    final divider = theme.dividerColor;
+// ── Level 1：日期 ──────────────────────────────────────────────────────────────
 
+class _DateGroup extends StatelessWidget {
+  const _DateGroup({
+    required this.date,
+    required this.slots,
+    required this.initiallyExpanded,
+    required this.isLatestDate,
+  });
+
+  final String date;
+  final List<MapEntry<String, Map<String, String>>> slots;
+  final bool initiallyExpanded;
+  final bool isLatestDate;
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-        ),
-      ),
-      child: Table(
-        columnWidths: const {0: FixedColumnWidth(148)},
-        defaultColumnWidth: const FlexColumnWidth(1),
-        border: TableBorder(
-          horizontalInside: BorderSide(color: divider, width: 0.5),
-          verticalInside: BorderSide(color: divider, width: 0.5),
-          bottom: BorderSide(color: divider, width: 0.5),
-        ),
-        children: [
-          TableRow(
-            decoration: BoxDecoration(
-              color: headerBg,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ExpansionTile(
+        key: PageStorageKey(date),
+        initiallyExpanded: initiallyExpanded,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        childrenPadding: EdgeInsets.zero,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: const Icon(Icons.calendar_today_outlined, size: 16),
+        title: Text(
+          date,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            ),
-            children: [
-              _headerCell('时间', headerStyle),
-              ...scripts.map((name) => _headerCell(name.tr, headerStyle)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _headerCell(String text, TextStyle? style) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Text(text, style: style, overflow: TextOverflow.ellipsis),
-    );
-  }
-
-  // 可垂直滚动的数据区
-  Widget _buildBody(
-    BuildContext context,
-    List<MapEntry<String, Map<String, String>>> entries,
-    List<String> scripts,
-  ) {
-    final theme = Theme.of(context);
-    final timeStyle = theme.textTheme.labelSmall;
-    final divider = theme.dividerColor;
-    final evenBg = theme.colorScheme.surface;
-    final oddBg = theme.colorScheme.surfaceContainerLow;
-
-    final rows = List.generate(entries.length, (i) {
-      final entry = entries[i];
-      final hourKey = entry.key;
-      final stateMap = entry.value;
-      return TableRow(
-        decoration: BoxDecoration(color: i.isEven ? evenBg : oddBg),
+        ),
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Text(hourKey, style: timeStyle),
-          ),
-          ...scripts.map((name) => Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: _StateChip(stateStr: stateMap[name]),
-                ),
-              )),
+          const Divider(height: 1),
+          ...List.generate(
+              slots.length,
+              (i) => _TimeSlotGroup(
+                    entry: slots[i],
+                    // 仅最新日期的第一条时间项默认展开
+                    initiallyExpanded: isLatestDate && i == 0,
+                  )),
+          const SizedBox(height: 4),
         ],
-      );
-    });
-
-    return Card(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(8),
-          bottomRight: Radius.circular(8),
-        ),
-      ),
-      child: SingleChildScrollView(
-        child: Table(
-          columnWidths: const {0: FixedColumnWidth(148)},
-          defaultColumnWidth: const FlexColumnWidth(1),
-          border: TableBorder(
-            horizontalInside: BorderSide(color: divider, width: 0.5),
-            verticalInside: BorderSide(color: divider, width: 0.5),
-          ),
-          children: rows,
-        ),
       ),
     );
   }
 }
 
-class _StateChip extends StatelessWidget {
-  const _StateChip({this.stateStr});
+// ── Level 2：时间 ──────────────────────────────────────────────────────────────
 
-  final String? stateStr;
+class _TimeSlotGroup extends StatelessWidget {
+  const _TimeSlotGroup({
+    required this.entry,
+    required this.initiallyExpanded,
+  });
+
+  final MapEntry<String, Map<String, String>> entry;
+  final bool initiallyExpanded;
 
   @override
   Widget build(BuildContext context) {
-    if (stateStr == null) return const SizedBox.shrink();
-    final (color, label) = _resolve(stateStr!);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        border: Border.all(color: color.withValues(alpha: 0.6)),
-        borderRadius: BorderRadius.circular(4),
+    final hourKey = entry.key;
+    final time = hourKey.split(' ').last;
+    final stateMap = entry.value;
+    final theme = Theme.of(context);
+
+    return ExpansionTile(
+      key: PageStorageKey(hourKey),
+      initiallyExpanded: initiallyExpanded,
+      tilePadding: const EdgeInsets.only(left: 12, right: 12),
+      childrenPadding: EdgeInsets.zero,
+      shape: const Border(),
+      collapsedShape: const Border(),
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      leading: Icon(
+        Icons.access_time_rounded,
+        size: 14,
+        color: theme.colorScheme.onSurfaceVariant,
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+      title: Text(
+        time,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      children: stateMap.entries
+          .map((e) => _ScriptRow(name: e.key, stateStr: e.value))
+          .toList(),
+    );
+  }
+}
+
+// ── Level 3：编号 + 状态 ────────────────────────────────────────────────────────
+
+class _ScriptRow extends StatelessWidget {
+  const _ScriptRow({required this.name, required this.stateStr});
+
+  final String name;
+  final String stateStr;
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, label) = _resolve(stateStr);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 2, 12, 2),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            border: Border.all(color: color.withValues(alpha: 0.6)),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${name.tr}  $label',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
