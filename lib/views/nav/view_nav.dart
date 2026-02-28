@@ -39,19 +39,18 @@ class _NavState extends State<Nav> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<NavCtrl>();
     return SizedBox(
       width: 180,
-      child: GetX<NavCtrl>(builder: (controller) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _searchBar(context, controller),
-            _filterChips(context, controller),
-            Expanded(child: _navList(context, controller)),
-            _trailing(context),
-          ],
-        );
-      }),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _searchBar(context, controller),
+          _filterChips(context, controller),
+          Expanded(child: _navList(context, controller)),
+          _trailing(context),
+        ],
+      ),
     );
   }
 
@@ -112,8 +111,7 @@ class _NavState extends State<Nav> {
           final (state, label) = entry;
           final isSelected = current == state;
           return FilterChip(
-            label: Text(label,
-                style: Theme.of(context).textTheme.labelSmall),
+            label: Text(label, style: Theme.of(context).textTheme.labelSmall),
             selected: isSelected,
             showCheckmark: false,
             avatar: null,
@@ -122,8 +120,7 @@ class _NavState extends State<Nav> {
             },
             backgroundColor:
                 Theme.of(context).colorScheme.surfaceContainerHighest,
-            selectedColor:
-                Theme.of(context).colorScheme.primaryContainer,
+            selectedColor: Theme.of(context).colorScheme.primaryContainer,
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -139,19 +136,20 @@ class _NavState extends State<Nav> {
       // 订阅 scriptModelMap 及每个 model 的 state 以响应运行状态变化
       scriptService.scriptModelMap.forEach((k, v) => v.state.value);
       final list = controller.filteredNavList;
+      final selectedName = controller.selectedScript.value;
       return ListView.builder(
         itemCount: list.length,
         itemBuilder: (context, index) {
           final name = list[index];
-          final isSelected = controller.selectedScript.value == name;
+          final isSelected = selectedName == name;
           return _navItem(context, controller, name, isSelected);
         },
       );
     });
   }
 
-  Widget _navItem(BuildContext context, NavCtrl controller, String name,
-      bool isSelected) {
+  Widget _navItem(
+      BuildContext context, NavCtrl controller, String name, bool isSelected) {
     return GestureDetector(
       onSecondaryTapDown: name == 'Home'
           ? null
@@ -168,11 +166,9 @@ class _NavState extends State<Nav> {
       child: ListTile(
         dense: true,
         visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
         selected: isSelected,
-        selectedTileColor:
-            Theme.of(context).colorScheme.secondaryContainer,
+        selectedTileColor: Theme.of(context).colorScheme.secondaryContainer,
         title: Text(
           name.tr,
           style: Theme.of(context).textTheme.labelMedium,
@@ -193,10 +189,7 @@ class _NavState extends State<Nav> {
           onPressed: () {
             Get.toNamed('/settings');
           }),
-    ]
-        .toColumn(mainAxisAlignment: MainAxisAlignment.end)
-        .padding(bottom: 10)
-        .expanded();
+    ].toColumn(mainAxisAlignment: MainAxisAlignment.end).padding(bottom: 10);
   }
 
   Future<void> addButton(BuildContext context) async {

@@ -11,7 +11,7 @@ class LayoutBinding extends Bindings {
   void dependencies() {
     Get.put<NavCtrl>(permanent: true, NavCtrl()); // 全局唯一的
     Get.lazyPut(fenix: true, () => ArgsController()); // 全局唯一的
-    Get.putAsync(() async => ScriptService(), permanent: true);
+    Get.put<ScriptService>(ScriptService(), permanent: true);
     Get.put<EmulatorOverlayService>(EmulatorOverlayService(), permanent: true);
     Get.putAsync(() async => RunHistoryService(), permanent: true);
   }

@@ -84,8 +84,8 @@ class _WaitingWidget extends StatelessWidget {
       const Divider(),
       Expanded(child: Obx(() {
         return ListView.builder(
-            itemBuilder: (context, index) =>
-                _buildDraggableTask(controller.scriptModel.waitingTaskList[index]),
+            itemBuilder: (context, index) => _buildDraggableTask(
+                controller.scriptModel.waitingTaskList[index]),
             itemCount: controller.scriptModel.waitingTaskList.length);
       }))
     ]
@@ -115,8 +115,8 @@ class _PendingWidget extends StatelessWidget {
           height: 140,
           child: Obx(() {
             return ListView.builder(
-                itemBuilder: (context, index) =>
-                    _buildDraggableTask(controller.scriptModel.pendingTaskList[index]),
+                itemBuilder: (context, index) => _buildDraggableTask(
+                    controller.scriptModel.pendingTaskList[index]),
                 itemCount: controller.scriptModel.pendingTaskList.length);
           }))
     ]

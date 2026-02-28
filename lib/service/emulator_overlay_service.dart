@@ -8,18 +8,25 @@ import 'package:win32/win32.dart';
 const GWLP_HWNDPARENT = -8;
 
 typedef _UpdateLayeredWindowN = Int32 Function(
-    IntPtr, IntPtr, Pointer<POINT>, Pointer<SIZE>,
-    IntPtr, Pointer<POINT>, Uint32, Pointer<BLENDFUNCTION>, Uint32);
-typedef _UpdateLayeredWindowD = int Function(
-    int, int, Pointer<POINT>, Pointer<SIZE>,
-    int, Pointer<POINT>, int, Pointer<BLENDFUNCTION>, int);
+    IntPtr,
+    IntPtr,
+    Pointer<POINT>,
+    Pointer<SIZE>,
+    IntPtr,
+    Pointer<POINT>,
+    Uint32,
+    Pointer<BLENDFUNCTION>,
+    Uint32);
+typedef _UpdateLayeredWindowD = int Function(int, int, Pointer<POINT>,
+    Pointer<SIZE>, int, Pointer<POINT>, int, Pointer<BLENDFUNCTION>, int);
 
 final _u32 = DynamicLibrary.open('user32.dll');
 final _ulw = _u32.lookupFunction<_UpdateLayeredWindowN, _UpdateLayeredWindowD>(
     'UpdateLayeredWindow');
 
-const _kUlwAlpha  = 0x00000002;
+const _kUlwAlpha = 0x00000002;
 const _kAcSrcOver = 0x00;
+const _hwndTopmost = -1; // HWND_TOPMOST: 置于所有非置顶窗口之上
 
 class _Entry {
   final int eHwnd;
@@ -34,8 +41,8 @@ class EmulatorOverlayService extends GetxService {
   final _map = <int, _Entry>{};
   Timer? _timer;
 
-  static const _cls    = 'OASXEmuOverlay';
-  static const _width  = 90;
+  static const _cls = 'OASXEmuOverlay';
+  static const _width = 90;
   static const _height = 35;
   bool _clsReg = false;
 
@@ -76,7 +83,7 @@ class EmulatorOverlayService extends GetxService {
 
   void _syncWindows() {
     final current = <int>{};
-    final buf  = calloc<Uint16>(512).cast<Utf16>();
+    final buf = calloc<Uint16>(512).cast<Utf16>();
     final rect = calloc<RECT>();
 
     try {
@@ -124,9 +131,9 @@ class EmulatorOverlayService extends GetxService {
 
     try {
       final wc = calloc<WNDCLASSEX>();
-      wc.ref.cbSize        = sizeOf<WNDCLASSEX>();
-      wc.ref.lpfnWndProc   = Pointer.fromFunction<WNDPROC>(_defProc, 0);
-      wc.ref.hInstance     = GetModuleHandle(nullptr);
+      wc.ref.cbSize = sizeOf<WNDCLASSEX>();
+      wc.ref.lpfnWndProc = Pointer.fromFunction<WNDPROC>(_defProc, 0);
+      wc.ref.hInstance = GetModuleHandle(nullptr);
       wc.ref.lpszClassName = cn;
       wc.ref.hbrBackground = NULL;
 
@@ -146,11 +153,10 @@ class EmulatorOverlayService extends GetxService {
 
   int _createOverlay(int eHwnd, String title) {
     final dash = title.lastIndexOf('12');
-    final shortLabel =
-    dash >= 0 ? ' ${title.substring(dash)}' : '#0';
+    final shortLabel = dash >= 0 ? ' ${title.substring(dash)}' : '#0';
 
-    final cn   = _cls.toNativeUtf16();
-    final wn   = ''.toNativeUtf16();
+    final cn = _cls.toNativeUtf16();
+    final wn = ''.toNativeUtf16();
     final rect = calloc<RECT>();
 
     try {
@@ -161,9 +167,10 @@ class EmulatorOverlayService extends GetxService {
 
       final oHwnd = CreateWindowEx(
         WINDOW_EX_STYLE.WS_EX_LAYERED |
-        WINDOW_EX_STYLE.WS_EX_TOOLWINDOW |
-        WINDOW_EX_STYLE.WS_EX_NOACTIVATE |
-        WINDOW_EX_STYLE.WS_EX_TRANSPARENT,
+            WINDOW_EX_STYLE.WS_EX_TOOLWINDOW |
+            WINDOW_EX_STYLE.WS_EX_NOACTIVATE |
+            WINDOW_EX_STYLE.WS_EX_TRANSPARENT |
+            WINDOW_EX_STYLE.WS_EX_TOPMOST,
         cn,
         wn,
         WINDOW_STYLE.WS_POPUP,
@@ -188,13 +195,13 @@ class EmulatorOverlayService extends GetxService {
 
       SetWindowPos(
         oHwnd,
-        eHwnd,
+        _hwndTopmost,
         x,
         y,
         _width,
         _height,
         SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE |
-        SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW,
+            SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW,
       );
 
       return oHwnd;
@@ -213,15 +220,15 @@ class EmulatorOverlayService extends GetxService {
     final hMem = CreateCompatibleDC(hScr);
 
     final bi = calloc<BITMAPINFO>();
-    bi.ref.bmiHeader.biSize        = sizeOf<BITMAPINFOHEADER>();
-    bi.ref.bmiHeader.biWidth       = _width;
-    bi.ref.bmiHeader.biHeight      = -_height;
-    bi.ref.bmiHeader.biPlanes      = 1;
-    bi.ref.bmiHeader.biBitCount    = 32;
+    bi.ref.bmiHeader.biSize = sizeOf<BITMAPINFOHEADER>();
+    bi.ref.bmiHeader.biWidth = _width;
+    bi.ref.bmiHeader.biHeight = -_height;
+    bi.ref.bmiHeader.biPlanes = 1;
+    bi.ref.bmiHeader.biBitCount = 32;
     bi.ref.bmiHeader.biCompression = BI_COMPRESSION.BI_RGB;
 
     final pvPtr = calloc<Pointer<Uint32>>();
-    final hBmp  = CreateDIBSection(
+    final hBmp = CreateDIBSection(
         hMem, bi, DIB_USAGE.DIB_RGB_COLORS, pvPtr.cast(), NULL, 0);
     calloc.free(bi);
 
@@ -234,8 +241,7 @@ class EmulatorOverlayService extends GetxService {
 
     final old = SelectObject(hMem, hBmp);
 
-    const bgColor =
-    (bgB & 0xFF) | ((bgG & 0xFF) << 8) | ((bgR & 0xFF) << 16);
+    const bgColor = (bgB & 0xFF) | ((bgG & 0xFF) << 8) | ((bgR & 0xFF) << 16);
 
     final pixels = pvPtr.value;
     for (int i = 0; i < _width * _height; i++) {
@@ -259,17 +265,23 @@ class EmulatorOverlayService extends GetxService {
       -1,
       txRc,
       DRAW_TEXT_FORMAT.DT_LEFT |
-      DRAW_TEXT_FORMAT.DT_VCENTER |
-      DRAW_TEXT_FORMAT.DT_SINGLELINE |
-      DRAW_TEXT_FORMAT.DT_END_ELLIPSIS,
+          DRAW_TEXT_FORMAT.DT_VCENTER |
+          DRAW_TEXT_FORMAT.DT_SINGLELINE |
+          DRAW_TEXT_FORMAT.DT_END_ELLIPSIS,
     );
 
     calloc.free(txRc);
     calloc.free(lbl);
 
-    final src = calloc<POINT>()..ref.x = 0..ref.y = 0;
-    final sz  = calloc<SIZE>()..ref.cx = _width..ref.cy = _height;
-    final dst = calloc<POINT>()..ref.x = x..ref.y = y;
+    final src = calloc<POINT>()
+      ..ref.x = 0
+      ..ref.y = 0;
+    final sz = calloc<SIZE>()
+      ..ref.cx = _width
+      ..ref.cy = _height;
+    final dst = calloc<POINT>()
+      ..ref.x = x
+      ..ref.y = y;
 
     final bf = calloc<BLENDFUNCTION>()
       ..ref.BlendOp = _kAcSrcOver
@@ -302,13 +314,13 @@ class EmulatorOverlayService extends GetxService {
 
       SetWindowPos(
         oHwnd,
-        eHwnd,
+        _hwndTopmost,
         r.ref.left,
         r.ref.top,
         _width,
         _height,
         SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE |
-        SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW,
+            SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW,
       );
     } finally {
       calloc.free(r);
