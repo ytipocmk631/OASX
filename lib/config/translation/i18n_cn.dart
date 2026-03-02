@@ -100,6 +100,7 @@ final Map<String, String> _cn_ui = {
   I18n.batch_edit_select_task: '选择任务',
   I18n.batch_edit_success: '批量设置成功',
   I18n.batch_edit_select_scripts: '选择脚本',
+  I18n.dashboard: '汇总面板',
 };
 
 final Map<String, String> _cn_menu = {

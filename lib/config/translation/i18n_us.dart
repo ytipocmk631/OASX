@@ -40,6 +40,7 @@ final Map<String, String> _us_ui = {
   I18n.batch_edit_select_task: 'Select Task',
   I18n.batch_edit_success: 'Batch applied successfully',
   I18n.batch_edit_select_scripts: 'Select Scripts',
+  I18n.dashboard: 'Dashboard',
 };
 
 final Map<String, String> _us_script = {

@@ -244,4 +244,6 @@ class I18n {
   static const String batch_edit_select_task = 'batch_edit_select_task';
   static const String batch_edit_success = 'batch_edit_success';
   static const String batch_edit_select_scripts = 'batch_edit_select_scripts';
+  // Dashboard
+  static const String dashboard = 'Dashboard';
 }
