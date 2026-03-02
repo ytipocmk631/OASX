@@ -223,11 +223,18 @@ class _FieldCard extends StatefulWidget {
 class _FieldCardState extends State<_FieldCard> {
   Timer? _debounce;
   late dynamic _pendingValue;
+  TextEditingController? _serialIpController;
 
   @override
   void initState() {
     super.initState();
     _pendingValue = widget.field.newValue;
+    if (widget.field.argName == 'serial') {
+      final raw = _pendingValue?.toString() ?? '';
+      final colonIdx = raw.lastIndexOf(':');
+      final ip = colonIdx > 0 ? raw.substring(0, colonIdx) : raw;
+      _serialIpController = TextEditingController(text: ip);
+    }
   }
 
   void _setPending(dynamic value) {
@@ -236,18 +243,36 @@ class _FieldCardState extends State<_FieldCard> {
   }
 
   Future<void> _apply() async {
-    await widget.ctrl.applyToSelected(
-      widget.field.groupName,
-      widget.field.argName,
-      widget.field.type,
-      _pendingValue,
-    );
+    if (widget.field.argName == 'serial') {
+      final newIp = _serialIpController?.text ?? '';
+      final perScriptValues = <String, dynamic>{};
+      for (final s in widget.scripts) {
+        final current = widget.field.currentValues[s]?.toString() ?? '';
+        final colonIdx = current.lastIndexOf(':');
+        final port = colonIdx > 0 ? current.substring(colonIdx + 1) : '';
+        perScriptValues[s] = port.isEmpty ? newIp : '$newIp:$port';
+      }
+      await widget.ctrl.applyPerScript(
+        widget.field.groupName,
+        widget.field.argName,
+        widget.field.type,
+        perScriptValues,
+      );
+    } else {
+      await widget.ctrl.applyToSelected(
+        widget.field.groupName,
+        widget.field.argName,
+        widget.field.type,
+        _pendingValue,
+      );
+    }
     if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
+    _serialIpController?.dispose();
     super.dispose();
   }
 
@@ -406,6 +431,17 @@ class _FieldCardState extends State<_FieldCard> {
 
       case 'string':
       case 'multi_line':
+        if (f.argName == 'serial') {
+          return TextFormField(
+            controller: _serialIpController,
+            decoration: const InputDecoration(
+                isDense: true,
+                hintText: 'IP',
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            style: Theme.of(context).textTheme.bodyMedium,
+          );
+        }
         return TextFormField(
           key: ValueKey('str_${f.argName}'),
           initialValue: _pendingValue?.toString() ?? '',

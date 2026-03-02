@@ -92,6 +92,8 @@ class ArgumentView extends StatefulWidget {
 class _ArgumentViewState extends State<ArgumentView> {
   Timer? timer;
   bool landscape = true;
+  TextEditingController? _serialIpController;
+  TextEditingController? _serialPortController;
 
   ArgumentModel get model {
     ArgsController controller = Get.find();
@@ -158,13 +160,15 @@ class _ArgumentViewState extends State<ArgumentView> {
       "boolean" => Checkbox(value: model.value, onChanged: onCheckboxChanged)
           .alignment(Alignment.centerLeft)
           .constrained(width: landscape ? 200 : null),
-      "string" => TextFormField(
-          initialValue: model.value.toString(),
-          onChanged: (value) {
-            timer?.cancel();
-            timer = Timer(const Duration(milliseconds: 1000),
-                () => onStringChanged(value));
-          }).constrained(width: landscape ? 200 : null),
+      "string" => model.title == 'serial'
+          ? _buildSerialField()
+          : TextFormField(
+              initialValue: model.value.toString(),
+              onChanged: (value) {
+                timer?.cancel();
+                timer = Timer(const Duration(milliseconds: 1000),
+                    () => onStringChanged(value));
+              }).constrained(width: landscape ? 200 : null),
       "multi_line" => TextFormField(
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
@@ -291,6 +295,56 @@ class _ArgumentViewState extends State<ArgumentView> {
   }
 
 // -----------------------------------------------------------------------------
+  @override
+  void dispose() {
+    _serialIpController?.dispose();
+    _serialPortController?.dispose();
+    super.dispose();
+  }
+
+  void _initSerialControllers() {
+    if (_serialIpController != null) return;
+    final raw = model.value.toString();
+    final colonIdx = raw.lastIndexOf(':');
+    final ip = colonIdx > 0 ? raw.substring(0, colonIdx) : raw;
+    final port = colonIdx > 0 ? raw.substring(colonIdx + 1) : '';
+    _serialIpController = TextEditingController(text: ip);
+    _serialPortController = TextEditingController(text: port);
+  }
+
+  Widget _buildSerialField() {
+    _initSerialControllers();
+    void onAnyChanged() {
+      final merged =
+          '${_serialIpController!.text}:${_serialPortController!.text}';
+      timer?.cancel();
+      timer = Timer(
+          const Duration(milliseconds: 1000), () => onStringChanged(merged));
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextFormField(
+          controller: _serialIpController,
+          decoration: const InputDecoration(hintText: 'IP'),
+          onChanged: (_) => onAnyChanged(),
+        ).constrained(width: landscape ? 120 : 120),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(':'),
+        ),
+        TextFormField(
+          controller: _serialPortController,
+          decoration: const InputDecoration(hintText: 'Port'),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
+          onChanged: (_) => onAnyChanged(),
+        ).constrained(width: landscape ? 68 : 68),
+      ],
+    );
+  }
+
   void showSnakbar(dynamic value) {
     Get.snackbar(I18n.setting_saved.tr, "$value",
         duration: const Duration(seconds: 1));

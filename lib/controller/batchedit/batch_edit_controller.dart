@@ -187,6 +187,33 @@ class BatchEditController extends GetxController {
     }
   }
 
+  /// 对每个脚本使用不同的值写入同一字段（适用于 serial 等端口各异的场景）
+  Future<void> applyPerScript(String groupName, String argName, String type,
+      Map<String, dynamic> perScriptValues) async {
+    final api = ApiClient();
+    final task = selectedTask.value;
+
+    final futures = perScriptValues.entries.map((e) =>
+        api.putScriptArg(e.key, task, groupName, argName, type, e.value));
+    final results = await Future.wait(futures);
+    final allSuccess = results.every((r) => r);
+
+    if (allSuccess) {
+      final group = commonGroups[groupName];
+      if (group != null) {
+        final field = group.firstWhereOrNull((f) => f.argName == argName);
+        if (field != null) {
+          for (final entry in perScriptValues.entries) {
+            field.currentValues[entry.key] = entry.value;
+          }
+          commonGroups.refresh();
+        }
+      }
+      Get.snackbar(I18n.batch_edit_success.tr, argName,
+          duration: const Duration(seconds: 2));
+    }
+  }
+
   void toggleScript(String name) {
     if (selectedScripts.contains(name)) {
       if (selectedScripts.length > 1) {
