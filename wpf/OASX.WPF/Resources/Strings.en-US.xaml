@@ -1,0 +1,59 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Navigation / sidebar -->
+    <sys:String x:Key="str_Scripts">Scripts</sys:String>
+    <sys:String x:Key="str_Tasks">Tasks</sys:String>
+    <sys:String x:Key="str_AddConfig">Add Configuration</sys:String>
+    <sys:String x:Key="str_Settings">Settings</sys:String>
+
+    <!-- Overview view -->
+    <sys:String x:Key="str_Scheduler">Scheduler</sys:String>
+    <sys:String x:Key="str_Running">Running</sys:String>
+    <sys:String x:Key="str_Pending">Pending</sys:String>
+    <sys:String x:Key="str_Waiting">Waiting</sys:String>
+    <sys:String x:Key="str_Log">Log</sys:String>
+    <sys:String x:Key="str_Clear">Clear</sys:String>
+    <sys:String x:Key="str_WS">WS: </sys:String>
+
+    <!-- Settings view -->
+    <sys:String x:Key="str_Theme">Theme</sys:String>
+    <sys:String x:Key="str_DarkMode">Dark Mode</sys:String>
+    <sys:String x:Key="str_Language">Language</sys:String>
+    <sys:String x:Key="str_Chinese">&#x4E2D;&#x6587;</sys:String>
+    <sys:String x:Key="str_English">English</sys:String>
+    <sys:String x:Key="str_Server">Server</sys:String>
+    <sys:String x:Key="str_KillServer">Kill OAS Server</sys:String>
+    <sys:String x:Key="str_Account">Account</sys:String>
+    <sys:String x:Key="str_LogOut">Log Out</sys:String>
+
+    <!-- Updater view -->
+    <sys:String x:Key="str_UpToDate">Already on the latest version</sys:String>
+    <sys:String x:Key="str_NewVersionAvailable">New version available</sys:String>
+    <sys:String x:Key="str_Branch">Branch: </sys:String>
+    <sys:String x:Key="str_ExecuteUpdate">Execute Update</sys:String>
+    <sys:String x:Key="str_CommitComparison">Commit Comparison</sys:String>
+    <sys:String x:Key="str_Repo">Repo</sys:String>
+    <sys:String x:Key="str_SHA_Header">SHA  Author  Time  Message</sys:String>
+    <sys:String x:Key="str_Local">Local</sys:String>
+    <sys:String x:Key="str_Remote">Remote</sys:String>
+    <sys:String x:Key="str_CommitHistory">Commit History</sys:String>
+
+    <!-- Dialogs -->
+    <sys:String x:Key="str_Rename">Rename</sys:String>
+    <sys:String x:Key="str_Delete">Delete</sys:String>
+    <sys:String x:Key="str_Cancel">Cancel</sys:String>
+    <sys:String x:Key="str_Confirm">Confirm</sys:String>
+    <sys:String x:Key="str_NewName">New Name</sys:String>
+    <sys:String x:Key="str_ConfigName">Config Name</sys:String>
+    <sys:String x:Key="str_Template">Copy From</sys:String>
+    <sys:String x:Key="str_Add">Add</sys:String>
+
+    <!-- Login -->
+    <sys:String x:Key="str_Address">Server Address</sys:String>
+    <sys:String x:Key="str_Username">Username</sys:String>
+    <sys:String x:Key="str_Password">Password</sys:String>
+    <sys:String x:Key="str_Login">Login</sys:String>
+
+</ResourceDictionary>
